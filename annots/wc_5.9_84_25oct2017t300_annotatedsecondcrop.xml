@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<annotation>
+  <folder>nuclei</folder>
+  <filename>original_annotated_images/wc_5.9_84_25oct2017t300_annotated.png</filename>
+  <path>original_annotated_images/wc_5.9_84_25oct2017t300_annotated.png</path>
+  <size>
+    <width>512</width>
+    <height>512</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+</annotation>

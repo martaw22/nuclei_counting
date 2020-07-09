@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<annotation>
+  <folder>nuclei</folder>
+  <filename>original_annotated_images/wc_7.1_90_15nov2017t100_annotated.png</filename>
+  <path>original_annotated_images/wc_7.1_90_15nov2017t100_annotated.png</path>
+  <size>
+    <width>512</width>
+    <height>512</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>nucleus</name>
+    <bndbox>
+      <xmin>129</xmin>
+      <ymin>88</ymin>
+      <xmax>172</xmax>
+      <ymax>131</ymax>
+    </bndbox>
+  </object>
+</annotation>
