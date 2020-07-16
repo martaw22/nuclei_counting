@@ -1,2 +1,7 @@
 .DS_Store
 images
+original_*images/**
+*~
+nuclei/**
+\#*
+cropped_*images/**
