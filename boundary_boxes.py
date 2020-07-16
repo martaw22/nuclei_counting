@@ -14,11 +14,12 @@ class NucleiAnnotation:
         """
         self.image_path_annotated = image_path_annotated
         self.image_path_not_annotated = image_folder_not_annotated + image_filename
-        self.filename = file
+        self.filename = file[:-4]
         self.height_orig = None
         self.width_orig = None
         self.bboxes = None
-    
+        self.top_left_corner_h = None
+        self.top_left_corner_w = None
 
     def load_image(self):
         #load the image
@@ -28,7 +29,19 @@ class NucleiAnnotation:
         print('image orig', image_orig)
         image_no_annotations = cv2.imread(self.image_path_not_annotated)
         self.height_orig, self.width_orig = image_orig.shape[:2]
+        print('height', self.height_orig)
+        print('width', self.width_orig)
         return image_orig, image_no_annotations
+
+    def crop_image(self, image_orig, image_no_annotations):
+        #crop the image to be 512 by 512
+        self.top_left_corner_h = np.random.randint(0, self.height_orig - 512)
+        self.top_left_corner_w = np.random.randint(0, self.width_orig - 512)
+        cropped_image = image_orig[self.top_left_corner_h:self.top_left_corner_h+512, self.top_left_corner_w:self.top_left_corner_w+512]
+        cropped_no_annotations = image_no_annotations[self.top_left_corner_h:self.top_left_corner_h+512, self.top_left_corner_w:self.top_left_corner_w+512]
+        cv2.imwrite('cropped_original_images/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w) + '.png', cropped_no_annotations)
+        return cropped_image, cropped_no_annotations
+
 
     def create_color_boundaries(self):
         #create boundaries for the color of interest
@@ -109,7 +122,7 @@ class NucleiAnnotation:
         # create a new XML file with the results
         mydata = self.prettify(annotation)
         filename = self.image_path_not_annotated[:-4]
-        myfile = open('xml_files/' + self.filename + '.xml', "w")
+        myfile = open('xml_files/' + self.filename + 'cropped.xml', "w")
         myfile.write(mydata)
         return drawing
 
@@ -119,7 +132,7 @@ class NucleiAnnotation:
         #cv2.imshow('grayscale', imgray)
         cv2.imwrite('bboxdrawing.png', drawing)
         #cv2.imshow('bbox', self.bboxes)
-        cv2.imwrite(self.filename + 'test_bboxes.png', self.bboxes)
+        cv2.imwrite('cropped_bbox_images/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w) + '_croppedbboxes.png', self.bboxes)
         
 
 path = 'original_images/'
@@ -136,10 +149,11 @@ for file in os.listdir(path):
 
         nuclei_file = NucleiAnnotation(annotated_filepath, path, file)
         image_orig, image_no_annotations = nuclei_file.load_image()
+        cropped_image, cropped_no_annotations = nuclei_file.crop_image(image_orig, image_no_annotations)
         lower, upper = nuclei_file.create_color_boundaries()
-        thresh, contours = nuclei_file.find_contours(image_orig, lower, upper)
+        thresh, contours = nuclei_file.find_contours(cropped_image, lower, upper)
         annotation = nuclei_file.create_xml_file()
-        drawing = nuclei_file.draw_contours(thresh, contours, image_no_annotations, annotation)
+        drawing = nuclei_file.draw_contours(thresh, contours, cropped_no_annotations, annotation)
         nuclei_file.save_bbox_image(drawing)
 
 '''
