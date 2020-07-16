@@ -39,7 +39,8 @@ class NucleiAnnotation:
         self.top_left_corner_w = np.random.randint(0, self.width_orig - 512)
         cropped_image = image_orig[self.top_left_corner_h:self.top_left_corner_h+512, self.top_left_corner_w:self.top_left_corner_w+512]
         cropped_no_annotations = image_no_annotations[self.top_left_corner_h:self.top_left_corner_h+512, self.top_left_corner_w:self.top_left_corner_w+512]
-        cv2.imwrite('cropped_original_images/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w) + '.png', cropped_no_annotations)
+        cv2.imwrite('cropped_original_images/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w) + '_cropped.png', cropped_no_annotations)
+        cv2.imwrite('cropped_annotated_images/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w) + '_cropped.png', cropped_image)
         return cropped_image, cropped_no_annotations
 
 
@@ -122,7 +123,7 @@ class NucleiAnnotation:
         # create a new XML file with the results
         mydata = self.prettify(annotation)
         filename = self.image_path_not_annotated[:-4]
-        myfile = open('xml_files/' + self.filename + 'cropped.xml', "w")
+        myfile = open('xml_files/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w) + '_cropped.xml', "w")
         myfile.write(mydata)
         return drawing
 
