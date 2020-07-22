@@ -5,4 +5,4 @@ original_*images/**
 nuclei/**
 \#*
 cropped_*images/**
-annots/**
+nuclei/annots/**
