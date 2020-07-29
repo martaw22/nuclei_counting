@@ -20,8 +20,8 @@ class NucleiDataset(Dataset):
         # define one class
         self.add_class("dataset", 1, "nuclei")
         # define data locations
-        images_dir = dataset_dir + '/images/'
-        annotations_dir = dataset_dir + '/annots/'
+        images_dir = dataset_dir + '/cropped_bbox_images/'
+        annotations_dir = dataset_dir + '/xml_files/'
         # find all images
         for filename in listdir(images_dir):
             if filename == '.DS_Store':
@@ -131,7 +131,7 @@ def plot_actual_vs_predicted(dataset, model, cfg, n_images=15):
             # calculate width and height of the box
             width, height = x2 - x1, y2 - y1
             # create the shape
-            rect = Rectangle((x1, y1), width, height, fill=False, color='red')
+            rect = Rectangle((x1, y1), width, height, fill=False, color='green')
             # draw the box
             ax.add_patch(rect)
         # show the figure
