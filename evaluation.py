@@ -23,8 +23,8 @@ class NucleiDataset(Dataset):
         # define one class
         self.add_class("dataset", 1, "nuclei")
         # define data locations
-        images_dir = dataset_dir + '/images/'
-        annotations_dir = dataset_dir + '/annots/'
+        images_dir = dataset_dir + '/cropped_original_images/'
+        annotations_dir = dataset_dir + '/xml_files/'
         # find all images
         for filename in listdir(images_dir):
             if filename == '.DS_Store':
@@ -151,7 +151,7 @@ cfg = PredictionConfig()
 # define the model
 model = MaskRCNN(mode='inference', model_dir='./', config=cfg)
 # load model weights
-model.load_weights('mask_rcnn_nuclei_cfg_0001.h5', by_name=True)
+model.load_weights('mask_rcnn_nuclei_cfg_0005.h5', by_name=True)
 # evaluate model on training dataset
 print(train_set.image_ids)
 train_mAP = evaluate_model(train_set, model, cfg)

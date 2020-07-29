@@ -79,8 +79,8 @@ class NucleiAnnotation:
         filename = ET.SubElement(annotation, 'filename').text = self.image_path_annotated
         path = ET.SubElement(annotation, 'path').text = self.image_path_annotated
         size = ET.SubElement(annotation, 'size')
-        ET.SubElement(size, 'width').text = str(self.width_orig)
-        ET.SubElement(size, 'height').text = str(self.height_orig)
+        ET.SubElement(size, 'width').text = str(512)
+        ET.SubElement(size, 'height').text = str(512)
         ET.SubElement(size, 'depth').text = str(3)
         segmented = ET.SubElement(annotation, 'segmented').text = '0'
         return annotation
