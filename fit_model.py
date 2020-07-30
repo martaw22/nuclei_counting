@@ -7,6 +7,7 @@ from numpy import asarray
 from mrcnn.utils import Dataset
 from mrcnn.config import Config
 from mrcnn.model import MaskRCNN
+import time
 
 # class that defines and loads the kangaroo dataset
 class NucleiDataset(Dataset):
@@ -92,11 +93,16 @@ class NucleiConfig(Config):
 	GPU_COUNT = 1
 	IMAGES_PER_GPU = 1
 	# number of training steps per epoch
-	STEPS_PER_EPOCH = 190
+	STEPS_PER_EPOCH = 2
 	#images are cropped from originals
 	IMAGE_MIN_DIM = 512
 	IMAGE_MAX_DIM = 512
 
+
+
+#start timing the run
+time_start = time.perf_counter()
+print('time started', time_start)
 
 # prepare train set
 train_set = NucleiDataset()
@@ -117,3 +123,8 @@ model = MaskRCNN(mode='training', model_dir='./', config=config)
 model.load_weights('mask_rcnn_coco.h5', by_name=True, exclude=["mrcnn_class_logits", "mrcnn_bbox_fc",  "mrcnn_bbox", "mrcnn_mask"])
 # train weights (output layers or 'heads')
 model.train(train_set, test_set, learning_rate=config.LEARNING_RATE, epochs=5, layers='heads')
+
+#end time of run
+time_end = time.perf_counter()
+
+print(f"Model fitting took {time_end - time_start:0.4f} seconds")
