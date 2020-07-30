@@ -15,6 +15,7 @@ from mrcnn.utils import Dataset
 from mrcnn.model import load_image_gt
 from mrcnn.model import mold_image
 from utils_myversion import compute_ap
+import time
  
 # class that defines and loads the dataset
 class NucleiDataset(Dataset):
@@ -154,6 +155,10 @@ def evaluate_model(dataset, model, cfg):
     mAP = mean(APs)
     mboxerrors = mean(box_errors)
     return mAP, mboxerrors, num_boxes_list, pred_num_boxes_list
+
+
+#start timing the run
+time_start = time.perf_counter()
  
 # load the train dataset
 train_set = NucleiDataset()
@@ -189,3 +194,6 @@ num_boxes.close()
 #test_mAP = evaluate_model(test_set, model, cfg)
 #print("Test mAP: %.3f" % test_mAP)
 
+#end time of run
+time_end = time.perf_counter()
+print(f"Evaluation took {time_end - time_start:0.4f} seconds")
