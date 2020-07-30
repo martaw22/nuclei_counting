@@ -104,6 +104,8 @@ class PredictionConfig(Config):
 # calculate the mAP for a model on a given dataset
 def evaluate_model(dataset, model, cfg):
     APs = list()
+    num_boxes_list = []
+    pred_num_boxes_list = []
     box_errors = []
     #print('dataset imageid', dataset.image_id)
     for image_id in dataset.image_ids:
@@ -128,6 +130,8 @@ def evaluate_model(dataset, model, cfg):
         #then calculate percent error
         num_boxes = len(r['rois'])
         pred_num_boxes = len(gt_bbox)
+        num_boxes_list.append(num_boxes)
+        pred_num_boxes_list.append(pred_num_boxes)
         if num_boxes == 0 and pred_num_boxes == 0:
             box_error = 0
         elif num_boxes == 0 and pred_num_boxes != 0:
@@ -149,7 +153,7 @@ def evaluate_model(dataset, model, cfg):
     # calculate the mean AP across all images
     mAP = mean(APs)
     mboxerrors = mean(box_errors)
-    return mAP, mboxerrors
+    return mAP, mboxerrors, num_boxes_list, pred_num_boxes_list
  
 # load the train dataset
 train_set = NucleiDataset()
@@ -171,8 +175,16 @@ model.load_weights('mask_rcnn_nuclei_cfg_0005.h5', by_name=True)
 # evaluate model on training dataset
 #print(train_set.image_ids)
 
-train_mAP = evaluate_model(train_set, model, cfg)
+train_mAP, box_errors, num_boxes_list, pred_num_boxes_list = evaluate_model(train_set, model, cfg)
 print("Train mAP: %.3f" % train_mAP)
+print('box errors', box_errors)
+
+#write the number of boxes actual and predicted to a text file
+num_boxes = open('num_boxes_lists.txt', 'w')
+num_boxes.write(str(num_boxes_list))
+num_boxes.write(',')
+num_boxes.write(str(pred_num_boxes_list))
+num_boxes.close()
 # evaluate model on test dataset
 #test_mAP = evaluate_model(test_set, model, cfg)
 #print("Test mAP: %.3f" % test_mAP)
