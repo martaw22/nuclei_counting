@@ -3,7 +3,7 @@ import numpy as np
 
 def compute_ap(gt_boxes, gt_class_ids, gt_masks,
            pred_boxes, pred_class_ids, pred_scores, pred_masks,
-           iou_threshold=0.5):
+           iou_threshold=0.1):
     """Compute Average Precision at a set IoU threshold (default 0.5).
                                                                     
     Returns:
@@ -73,28 +73,36 @@ def compute_matches(gt_boxes, gt_class_ids, gt_masks,
     print('gt_masks', gt_masks.shape)
     # Compute IoU overlaps [pred_masks, gt_masks]
     overlaps = compute_overlaps_masks(pred_masks, gt_masks)
-    print('found overlaps')
+    print('found overlaps', overlaps)
     # Loop through predictions and find matching ground truth boxes
     match_count = 0
     pred_match = -1 * np.ones([pred_boxes.shape[0]])
     gt_match = -1 * np.ones([gt_boxes.shape[0]])
     print('starting loop')
     for i in range(len(pred_boxes)):
+       print('i - starting loop', i)
        # Find best matching ground truth box
        # 1. Sort matches by score
        sorted_ixs = np.argsort(overlaps[i])[::-1]
+       print('sorted_ixs - sorting match by score', sorted_ixs)
        # 2. Remove low scores
        low_score_idx = np.where(overlaps[i, sorted_ixs] < score_threshold)[0]
+       print('low scoring matches', low_score_idx)
        if low_score_idx.size > 0:
            sorted_ixs = sorted_ixs[:low_score_idx[0]]
+           print('there was a low score, new sorted list', sorted_ixs)
        # 3. Find the match
        for j in sorted_ixs:
+           print('j in sorted_ixs', j)
            # If ground truth box is already matched, go to next one
            if gt_match[j] > -1:
+               print('j is already matched')
                continue
            # If we reach IoU smaller than the threshold, end the loop
            iou = overlaps[i, j]
+           print('iou', iou)
            if iou < iou_threshold:
+               print('iou smaller than threshold')
                break
            # Do we have a match?
            if pred_class_ids[i] == gt_class_ids[j]:
@@ -102,7 +110,8 @@ def compute_matches(gt_boxes, gt_class_ids, gt_masks,
                gt_match[j] = i
                pred_match[i] = j
                break
-    print('finished matching')
+    print('match count', match_count)
+    print('finished matching, here are the gt_match and pred_match values, which are indices', gt_match, pred_match)
     return gt_match, pred_match, overlaps
 
 

@@ -96,7 +96,7 @@ class PredictionConfig(Config):
     IMAGES_PER_GPU = 1
 
 # plot a number of photos with ground truth and predictions
-def plot_actual_vs_predicted(dataset, model, cfg, n_images=15):
+def plot_actual_vs_predicted(dataset, model, cfg, n_images=1):
     # load image and mask
     for i in range(n_images):
         # load the image and mask
