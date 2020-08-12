@@ -1,4 +1,4 @@
-'''Script to put boundary boxes around each nuclei in an image.  The box will be of an arbitrary predetermined size.  The location will be based on pre-labeling of each nucleus with a dot of a contrasting color.'''
+'''Script to get a random crop from each image in a folder, save the crop of the original and annotated image, xml file of bboxes, and an image with bboxes.  The box will be of an arbitrary predetermined size.  The location will be based on pre-labeling of each nucleus with a dot of a contrasting color.'''
 
 import cv2
 import numpy as np
@@ -45,7 +45,7 @@ class NucleiAnnotation:
 
 
     def create_color_boundaries(self):
-        #create boundaries for the color of interest
+        #create boundaries for the color of interest of the annotation color
         lower = np.array([200, 0, 200], dtype = 'uint8')
         upper = np.array([255, 50, 255], dtype = 'uint8')
         
