@@ -154,7 +154,7 @@ def evaluate_model(dataset, model, cfg):
     # calculate the mean AP across all images
     mAP = mean(APs)
     mboxerrors = mean(box_errors)
-    return mAP, mboxerrors, num_boxes_list, pred_num_boxes_list
+    return mAP, mboxerrors, num_boxes_list, pred_num_boxes_list, APs
 
 
 #start timing the run
@@ -180,15 +180,17 @@ model.load_weights('mask_rcnn_nuclei_cfg_0005.h5', by_name=True)
 # evaluate model on training dataset
 #print(train_set.image_ids)
 
-train_mAP, box_errors, num_boxes_list, pred_num_boxes_list = evaluate_model(train_set, model, cfg)
+train_mAP, box_errors, num_boxes_list, pred_num_boxes_list, APs = evaluate_model(train_set, model, cfg)
 print("Train mAP: %.3f" % train_mAP)
 print('box errors', box_errors)
 
 #write the number of boxes actual and predicted to a text file
-num_boxes = open('num_boxes_lists.txt', 'w')
+num_boxes = open('num_boxes_lists_1.txt', 'w')
 num_boxes.write(str(num_boxes_list))
-num_boxes.write(',')
+num_boxes.write(',\n')
 num_boxes.write(str(pred_num_boxes_list))
+num_boxes.write(',\n')
+num_boxes.write(str(APs))
 num_boxes.close()
 # evaluate model on test dataset
 #test_mAP = evaluate_model(test_set, model, cfg)
