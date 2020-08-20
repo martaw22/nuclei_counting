@@ -11,3 +11,4 @@ xml_files/*
 original_annotated_images/*
 original_images/*
 resized_images/*
+output_weights/*
