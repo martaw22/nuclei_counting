@@ -1,4 +1,4 @@
-'''Script to preprocess the images before they are run by the model'''
+'''Script to preprocess the images before they are run by the model - resizes them and separately crops them into equal squares'''
 
 import cv2
 import numpy as np
@@ -95,61 +95,3 @@ for file in os.listdir(dir_unannotated):
         crop_annot, crop_unannot = nuclei_file.crop_image(image_annot, image_unannot)
 
 
-
-#first want to open an image and print out what size it is
-image_path = 'original_images/wc_106_244_lys30x_20mar2020t020.tif'
-image = cv2.imread(image_path)
-height, width = image.shape[:2]
-print('height', height)
-print('width', width)
-
-#now want to try resizing image so that the height is divisible by 512
-#percent by which the image is resized
-scale_percent = 20
-
-#calculate the 20 percent of original dimensions
-new_w = int(width * scale_percent / 100)
-new_h = int(height * scale_percent / 100)
-
-#dsize
-dsize = (new_w, new_h)
-
-#resize image
-new_ar = cv2.resize(image, dsize)
-
-cv2.imwrite('new_aspect_ratio.png', new_ar)
-#cv2.imshow('new aspect ratio', new_ar) 
-#print('new height', new_h)
-#print('new width', new_w)
-
-#now try padding image so that the final dimensions are 512x512
-BLACK = [0,0,0]
-constant= cv2.copyMakeBorder(new_ar,64,64,0,0,cv2.BORDER_CONSTANT,value=BLACK)
-cv2.imwrite('ar_padding.png', constant)
-h_3, w_3 = constant.shape[:2]
-#print('height again', h_3)
-#print('width again', w_3)
-
-
-########now separately going to split the image into 512x512 crops and pad when necessary so all are the right size
-x = int(width/512)
-y = math.ceil(height/512)
-start_w = 0
-#start_h = 0
-for i in range(x):
-    #print('i', i)
-    start_h = 0
-    image_crop_w = image[:, start_w:(i+1)*512]
-    #print('height, width', image_crop_w.shape[:2])
-    start_w += 512
-    #print('start w', start_w)
-    for j in range(y):
-        #print('j', j)
-        #print('start h', start_h)
-        #if j*512 < height:
-        image_crop_h = image_crop_w[start_h:(j+1)*512, :]
-        start_h += 512
-        if j == y-1:
-            image_crop_h = cv2.copyMakeBorder(image_crop_h,64,64,0,0,cv2.BORDER_CONSTANT,value=BLACK)
-        cv2.imwrite('cropped_' + str(i) + str(j) + '.png', image_crop_h)
-        print('height, width', image_crop_h.shape[:2])
