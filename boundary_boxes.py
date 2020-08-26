@@ -123,7 +123,8 @@ class NucleiAnnotation:
         # create a new XML file with the results
         mydata = self.prettify(annotation)
         filename = self.image_path_not_annotated[:-4]
-        myfile = open('nuclei/xml_files/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w) + '_cropped.xml', "w")
+        #myfile = open('nuclei/xml_files/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w) + '_cropped.xml', "w")
+        myfile = open('nuclei/xml_files/resized/' + self.filename + '.xml', 'w')
         myfile.write(mydata)
         return drawing
 
@@ -133,11 +134,11 @@ class NucleiAnnotation:
         #cv2.imshow('grayscale', imgray)
         cv2.imwrite('bboxdrawing.png', drawing)
         #cv2.imshow('bbox', self.bboxes)
-        cv2.imwrite('nuclei/cropped_bbox_images/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w) + '_cropped.png', self.bboxes)
+        cv2.imwrite('nuclei/val_data/resized_images/bbox_images/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w) + '_cropped.png', self.bboxes)
         
 
-path = 'original_images/'
-otherdirectory = 'original_annotated_images/'
+path = 'nuclei/val_date/resized_images/unannotated/'
+otherdirectory = 'nuclei/val_data/resized_images/annotated/'
 for file in os.listdir(path):
     print('file', file)
     if file == '.DS_Store':
@@ -150,11 +151,11 @@ for file in os.listdir(path):
 
         nuclei_file = NucleiAnnotation(annotated_filepath, path, file)
         image_orig, image_no_annotations = nuclei_file.load_image()
-        cropped_image, cropped_no_annotations = nuclei_file.crop_image(image_orig, image_no_annotations)
+        #cropped_image, cropped_no_annotations = nuclei_file.crop_image(image_orig, image_no_annotations)
         lower, upper = nuclei_file.create_color_boundaries()
-        thresh, contours = nuclei_file.find_contours(cropped_image, lower, upper)
+        thresh, contours = nuclei_file.find_contours(image_orig, lower, upper)
         annotation = nuclei_file.create_xml_file()
-        drawing = nuclei_file.draw_contours(thresh, contours, cropped_no_annotations, annotation)
+        drawing = nuclei_file.draw_contours(thresh, contours, image_no_annotations, annotation)
         nuclei_file.save_bbox_image(drawing)
 
 '''

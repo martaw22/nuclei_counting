@@ -13,15 +13,14 @@ class ImagePreprocessing:
         self.path_annotated = path_annotated
         self.path_unannotated = path_unannotated
         self.filename = filename[:-4]
-        self.save_path_resize = 'resized_images/'
-        self.save_path_crop = 'cropped_images/'
+        self.save_path_resize = 'nuclei/val_data/resized_images/'
+        self.save_path_crop = 'nuclei/val_data/cropped_images/'
         self.height_orig = None
         self.width_orig = None
         
     def load_image(self):
         '''load the image'''
-        image_path = self.path_annotated
-        image_annot = cv2.imread(image_path)
+        image_annot = cv2.imread(self.path_annotated)
         image_unannot = cv2.imread(self.path_unannotated)
         self.height_orig, self.width_orig = image_annot.shape[:2]
         return image_annot, image_unannot
@@ -71,14 +70,14 @@ class ImagePreprocessing:
                     BLACK = [0,0,0]
                     annot_crop_h = cv2.copyMakeBorder(annot_crop_h,64,64,0,0,cv2.BORDER_CONSTANT,value=BLACK)
                     unannot_crop_h = cv2.copyMakeBorder(unannot_crop_h,64,64,0,0,cv2.BORDER_CONSTANT,value=BLACK)
-                cv2.imwrite(self.save_path_crop + 'annotated/' + self.filename + str(i) + str(j) + '.png', annot_crop_h)
-                cv2.imwrite(self.save_path_crop + 'unannotated/' + self.filename + str(i) + str(j) + '.png', unannot_crop_h)
+                cv2.imwrite(self.save_path_crop + 'annotated/' + self.filename + '_' + str(i) + str(j) + '.png', annot_crop_h)
+                cv2.imwrite(self.save_path_crop + 'unannotated/' + self.filename + '_' + str(i) + str(j) + '.png', unannot_crop_h)
         return annot_crop_h, unannot_crop_h
 
 
 #Load and process the images
-dir_annotated = 'original_annotated_images/'
-dir_unannotated = 'original_images/'
+dir_annotated = 'nuclei/annotated_images/'
+dir_unannotated = 'nuclei/val_data/original_images/'
 for file in os.listdir(dir_unannotated):
     print('file', file)
     if file == '.DS_Store':
