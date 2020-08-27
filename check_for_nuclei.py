@@ -12,7 +12,7 @@ class CheckNuclei:
         self.path_annotated = path_annotated
         self.path_unannotated = path_unannotated
         self.filename = filename
-        self.save_path = 'nuclei/val_data/cropped_images/no_nuclei/'
+        self.save_path = 'cropped_images/no_nuclei/'
 
 
     def load_image(self):
@@ -39,12 +39,12 @@ class CheckNuclei:
 
     def move_file(self, image_unannot):
         '''Moves file from unannotated dir to no_nuclei dir'''
-        shutil.move(self.path_unannotated, self.save_path + self.filename)
+        shutil.move(self.path_unannotated, self.save_path)
 
 
 #load and check each image
-dir_annotated = 'nuclei/val_data/cropped_images/annotated/'
-dir_unannotated = 'nuclei/val_data/cropped_images/unannotated/'
+dir_annotated = 'cropped_images/annotated/'
+dir_unannotated = 'cropped_images/unannotated/'
 for file in os.listdir(dir_annotated):
     print('file', file)
     if file == '.DS_Store':
@@ -57,4 +57,4 @@ for file in os.listdir(dir_annotated):
         #nuclei_file.check_nuclei(image_annot)
         if nuclei_file.check_nuclei(image_annot) == False:
             print('no nuclei present')
-            '''nuclei_file.move_file(image_unannot)'''
+            nuclei_file.move_file(image_unannot)

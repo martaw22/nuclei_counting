@@ -13,7 +13,7 @@ class NucleiAnnotation:
         Constructor
         """
         self.image_path_annotated = image_path_annotated
-        self.image_path_not_annotated = image_folder_not_annotated + image_filename
+        self.image_path_not_annotated = image_folder_not_annotated
         self.filename = file[:-4]
         self.height_orig = None
         self.width_orig = None
@@ -23,14 +23,13 @@ class NucleiAnnotation:
 
     def load_image(self):
         #load the image
-        image_path = self.image_path_annotated
-        print('image path', image_path)
-        image_orig = cv2.imread(image_path)
-        print('image orig', image_orig)
+        #print('image path', image_path)
+        image_orig = cv2.imread(self.image_path_annotated)
+        #print('image orig', image_orig)
         image_no_annotations = cv2.imread(self.image_path_not_annotated)
         self.height_orig, self.width_orig = image_orig.shape[:2]
-        print('height', self.height_orig)
-        print('width', self.width_orig)
+        #print('height', self.height_orig)
+        #print('width', self.width_orig)
         return image_orig, image_no_annotations
 
     def crop_image(self, image_orig, image_no_annotations):
@@ -134,22 +133,22 @@ class NucleiAnnotation:
         #cv2.imshow('grayscale', imgray)
         cv2.imwrite('bboxdrawing.png', drawing)
         #cv2.imshow('bbox', self.bboxes)
-        cv2.imwrite('nuclei/val_data/resized_images/bbox_images/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w) + '_cropped.png', self.bboxes)
-        
+        #cv2.imwrite('nuclei/val_data/resized_images/bbox_images/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w).png', self.bboxes)
+        cv2.imwrite('resized_images/bbox_images/' + self.filename + '.png', self.bboxes)
 
-path = 'nuclei/val_date/resized_images/unannotated/'
-otherdirectory = 'nuclei/val_data/resized_images/annotated/'
+path = 'resized_images/unannotated/'
+otherdirectory = 'resized_images/annotated/'
 for file in os.listdir(path):
     print('file', file)
     if file == '.DS_Store':
         continue
     else:
-        annotated_filepath = otherdirectory + file[:-4] + '_annotated.png'
+        annotated_filepath = otherdirectory + file[:-4] + '.png'
         original_filepath = path + file
         print('annoted file', annotated_filepath)
         print('original file', original_filepath)
 
-        nuclei_file = NucleiAnnotation(annotated_filepath, path, file)
+        nuclei_file = NucleiAnnotation(annotated_filepath, original_filepath, file)
         image_orig, image_no_annotations = nuclei_file.load_image()
         #cropped_image, cropped_no_annotations = nuclei_file.crop_image(image_orig, image_no_annotations)
         lower, upper = nuclei_file.create_color_boundaries()
