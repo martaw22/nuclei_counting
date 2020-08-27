@@ -123,7 +123,7 @@ class NucleiAnnotation:
         mydata = self.prettify(annotation)
         filename = self.image_path_not_annotated[:-4]
         #myfile = open('nuclei/xml_files/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w) + '_cropped.xml', "w")
-        myfile = open('nuclei/xml_files/resized/' + self.filename + '.xml', 'w')
+        myfile = open('nuclei/xml_files/cropped/' + self.filename + '.xml', 'w')
         myfile.write(mydata)
         return drawing
 
@@ -134,10 +134,10 @@ class NucleiAnnotation:
         cv2.imwrite('bboxdrawing.png', drawing)
         #cv2.imshow('bbox', self.bboxes)
         #cv2.imwrite('nuclei/val_data/resized_images/bbox_images/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w).png', self.bboxes)
-        cv2.imwrite('resized_images/bbox_images/' + self.filename + '.png', self.bboxes)
+        cv2.imwrite('cropped_images/bbox_images/' + self.filename + '.png', self.bboxes)
 
-path = 'resized_images/unannotated/'
-otherdirectory = 'resized_images/annotated/'
+path = 'cropped_images/unannotated/'
+otherdirectory = 'cropped_images/annotated/'
 for file in os.listdir(path):
     print('file', file)
     if file == '.DS_Store':
