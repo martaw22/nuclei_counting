@@ -14,3 +14,5 @@ resized_images/*
 output_weights/*
 image_preds/*
 mrcnn/*
+eval_output/*
+val_image_lists/*
