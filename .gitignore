@@ -16,3 +16,6 @@ image_preds/*
 mrcnn/*
 eval_output/*
 val_image_lists/*
+__pycache__/*
+bboxdrawing.png
+cuda_10.0.130_410.48_linux
