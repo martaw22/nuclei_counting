@@ -12,3 +12,5 @@ original_annotated_images/*
 original_images/*
 resized_images/*
 output_weights/*
+image_preds/*
+mrcnn/*
