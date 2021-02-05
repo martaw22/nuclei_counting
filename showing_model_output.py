@@ -1,6 +1,6 @@
 '''The complete example of loading the trained model and making a prediction for the first few images in the train and test datasets is listed below.'''
 
-# detect kangaroos in photos with mask rcnn model
+# detect nuclei in photos with mask rcnn model
 from os import listdir
 from xml.etree import ElementTree
 from numpy import zeros
@@ -20,28 +20,41 @@ class NucleiDataset(Dataset):
         # define one class
         self.add_class("dataset", 1, "nuclei")
         # define data locations
-        images_dir = dataset_dir + '/cropped_bbox_images/'
-        annotations_dir = dataset_dir + '/xml_files/'
+        images_dir = dataset_dir + '/training_data/cropped_images/unannotated/'
+        annotations_dir = dataset_dir + '/xml_files/cropped/'
+        val_images_dir = dataset_dir + '/val_data/cropped_images/unannotated/'
         # find all images
-        for filename in listdir(images_dir):
-            if filename == '.DS_Store':
-                continue
-            # extract image id
-            image_id = filename[:-4]
-            # skip bad images
-            #if image_id in ['00090']:
-            #    continue
-            # skip all images after 150 if we are building the train set
-            #if is_train and int(image_id) >= 150:
-            #    continue
-            # skip all images before 150 if we are building the test/val set
-            #if not is_train and int(image_id) < 150:
-            #    continue
-            img_path = images_dir + filename
-            ann_path = annotations_dir + image_id + '.xml'
-            # add to dataset
-            self.add_image('dataset', image_id=image_id, path=img_path, annotation=ann_path)
-
+        if is_train:
+            for filename in listdir(images_dir):
+                if filename == '.DS_Store':
+                    continue
+                # extract image id
+                image_id = filename[:-4]
+                # skip bad images
+                #if image_id in ['00090']:
+                #    continue
+                # skip all images after 150 if we are building the train set
+                #if is_train and int(image_id) >= 150:
+                #    continue
+                # skip all images before 150 if we are building the test/val set
+                #if not is_train and int(image_id) < 150:
+                #    continue
+                img_path = images_dir + filename
+                ann_path = annotations_dir + image_id + '.xml'
+                # add to dataset
+                self.add_image('dataset', image_id=image_id, path=img_path, annotation=ann_path)
+        if not is_train:
+            for filename in listdir(val_images_dir):
+                if filename == '.DS_Store':
+                    continue
+                #extract image id
+                image_id = filename[:-4]
+                #image path
+                img_path = val_images_dir + filename
+                ann_path = annotations_dir + image_id + '.xml'
+                #add to dataset
+                self.add_image('dataset', image_id=image_id, path=img_path, annotation=ann_path)
+                
     # load all bounding boxes for an image
     def extract_boxes(self, filename):
         # load and parse the file
@@ -85,6 +98,9 @@ class NucleiDataset(Dataset):
         info = self.image_info[image_id]
         return info['path']
 
+    def return_id(self, image_id):
+        return image_id
+    
 # define the prediction configuration
 class PredictionConfig(Config):
     # define the name of the configuration
@@ -96,11 +112,12 @@ class PredictionConfig(Config):
     IMAGES_PER_GPU = 1
 
 # plot a number of photos with ground truth and predictions
-def plot_actual_vs_predicted(dataset, model, cfg, n_images=1):
+def plot_actual_vs_predicted(dataset, model, cfg, n_images=200):
     # load image and mask
     for i in range(n_images):
         # load the image and mask
         image = dataset.load_image(i)
+        image_id = dataset.return_id(i)
         mask, _ = dataset.load_mask(i)
         # convert pixel values (e.g. center)
         scaled_image = mold_image(image, cfg)
@@ -110,10 +127,10 @@ def plot_actual_vs_predicted(dataset, model, cfg, n_images=1):
         yhat = model.detect(sample, verbose=0)[0]
         # define subplot
         #pyplot.subplot(n_images, 2, i*2+1)
-        pyplot.figure()
+        #pyplot.figure()
         # plot raw pixel data
-        pyplot.imshow(image)
-        pyplot.title('Actual')
+        #pyplot.imshow(image)
+        #pyplot.title('Actual')
         # plot masks
         for j in range(mask.shape[2]):
             print('j', j)
@@ -135,14 +152,15 @@ def plot_actual_vs_predicted(dataset, model, cfg, n_images=1):
             # draw the box
             ax.add_patch(rect)
         # show the figure
-        pyplot.show()
+        save_path = 'image_preds/'
+        pyplot.savefig(save_path + str(image_id) + '_bbox_preds_5epochs.png')
 
 # load the train dataset
 train_set = NucleiDataset()
 train_set.load_dataset('nuclei', is_train=True)
 train_set.prepare()
 print('Train: %d' % len(train_set.image_ids))
-# load the test dataset
+# load the val dataset
 test_set = NucleiDataset()
 test_set.load_dataset('nuclei', is_train=False)
 test_set.prepare()
@@ -152,7 +170,8 @@ cfg = PredictionConfig()
 # define the model
 model = MaskRCNN(mode='inference', model_dir='./', config=cfg)
 # load model weights
-model_path = 'mask_rcnn_nuclei_cfg_0005.h5'
+model_folder = 'nuclei_cfg20210201_10epochs/'
+model_path = model_folder + 'mask_rcnn_nuclei_cfg_0005.h5'
 model.load_weights(model_path, by_name=True)
 # plot predictions for train dataset
 #plot_actual_vs_predicted(train_set, model, cfg)

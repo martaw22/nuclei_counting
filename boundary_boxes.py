@@ -60,7 +60,7 @@ class NucleiAnnotation:
         ret, thresh = cv2.threshold(imgray, 50, 255, cv2.THRESH_BINARY)
 
         #find contours
-        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        _, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         return thresh, contours
     
     def prettify(self, elem):
@@ -131,13 +131,13 @@ class NucleiAnnotation:
         #cv2.imwrite ('test_mask.png', output)
         #cv2.imwrite('test_contours.png', im2)
         #cv2.imshow('grayscale', imgray)
-        cv2.imwrite('bboxdrawing.png', drawing)
+        #cv2.imwrite('bboxdrawing.png', drawing)
         #cv2.imshow('bbox', self.bboxes)
-        #cv2.imwrite('nuclei/val_data/resized_images/bbox_images/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w).png', self.bboxes)
-        cv2.imwrite('cropped_images/bbox_images/' + self.filename + '.png', self.bboxes)
+        #cv2.imwrite('nuclei/training_data/resized_images/bbox_images/' + self.filename + '_' + str(self.top_left_corner_h) + '_' + str(self.top_left_corner_w).png', self.bboxes)
+        cv2.imwrite('nuclei/training_data/cropped_images/bbox_images/' + self.filename + '.png', self.bboxes)
 
-path = 'cropped_images/unannotated/'
-otherdirectory = 'cropped_images/annotated/'
+path = 'nuclei/training_data/cropped_images/unannotated/'
+otherdirectory = 'nuclei/training_data/cropped_images/annotated/'
 for file in os.listdir(path):
     print('file', file)
     if file == '.DS_Store':

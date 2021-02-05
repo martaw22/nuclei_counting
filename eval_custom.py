@@ -16,7 +16,8 @@ from mrcnn.model import load_image_gt
 from mrcnn.model import mold_image
 from utils_myversion import compute_ap
 import time
- 
+import pickle
+
 # class that defines and loads the dataset
 class NucleiDataset(Dataset):
     # load the dataset definitions
@@ -24,29 +25,47 @@ class NucleiDataset(Dataset):
         # define one class
         self.add_class("dataset", 1, "nuclei")
         # define data locations
-        images_dir = dataset_dir + '/cropped_original_images/'
-        annotations_dir = dataset_dir + '/xml_files/'
-        # find all images
-        for filename in listdir(images_dir):
-            if filename == '.DS_Store':
-                continue
-            # extract image id
-            image_id = filename[:-4]
-            print('image_id', image_id)
-            # skip bad images
-            #if image_id in ['00090']:
-            #    continue
-            # skip all images after 150 if we are building the train set
-            #if is_train and int(image_id) >= 150:
-            #    continue
-            # skip all images before 150 if we are building the test/val set
-            #if not is_train and int(image_id) < 150:
-            #    continue
-            img_path = images_dir + filename
-            ann_path = annotations_dir + image_id + '.xml'
-            # add to dataset
-            self.add_image('dataset', image_id=image_id, path=img_path, annotation=ann_path)
- 
+        images_dir = dataset_dir + '/cropped_images_pool/'
+        annotations_dir = dataset_dir + '/xml_files/cropped/'
+        val_images_dir = dataset_dir + '/val_data/cropped_images/unannotated/'
+        val_annotations_dir = dataset_dir + '/xml_files/cropped/'
+        with open('val_images_15epochs_0.01lr', 'rb') as f:
+            val_im = pickle.load(f)
+        if is_train:
+            # find all images
+            for filename in listdir(images_dir):
+                if filename == '.DS_Store':
+                    continue
+                # extract image id
+                image_id = filename[:-4]
+                #print('image_id', image_id)
+                # skip bad images
+                #if image_id in ['00090']:
+                #    continue
+                # skip all images after 150 if we are building the train set
+                #if is_train and int(image_id) >= 150:
+                #    continue
+                # skip all images before 150 if we are building the test/val set
+                #if not is_train and int(image_id) < 150:
+                #    continue
+                img_path = images_dir + filename
+                ann_path = annotations_dir + image_id + '.xml'
+                # add to dataset
+                self.add_image('dataset', image_id=image_id, path=img_path, annotation=ann_path)
+        #find all val images
+        if not is_train:
+            for filename in val_im:
+                if filename == '.DS_Store':
+                    continue
+                # extract image id
+                image_id = filename[:-4]
+                #print('image_id', image_id)
+                img_path = images_dir + filename
+                ann_path = annotations_dir + image_id + '.xml'
+                # add to dataset
+                self.add_image('dataset', image_id=image_id, path=img_path, annotation=ann_path)
+
+            
     # extract bounding boxes from an annotation file
     def extract_boxes(self, filename):
         # load and parse the file
@@ -122,11 +141,11 @@ def evaluate_model(dataset, model, cfg):
         yhat = model.detect(sample, verbose=0)
         # extract results for first sample
         r = yhat[0]
-        print('rois', r['rois'])
-        print('class ids', r['class_ids'])
-        print('scores', r['scores'])
-        print('gt bbox', gt_bbox)
-        print('gt class id', gt_class_id)
+        #print('rois', r['rois'])
+        #print('class ids', r['class_ids'])
+        #print('scores', r['scores'])
+        #print('gt bbox', gt_bbox)
+        #print('gt class id', gt_class_id)
         #calculate number of boxes as compared to predicted number of boxes
         #then calculate percent error
         num_boxes = len(r['rois'])
@@ -140,9 +159,9 @@ def evaluate_model(dataset, model, cfg):
         else:
             box_error = abs(pred_num_boxes-num_boxes)/num_boxes
         box_errors.append(box_error)
-        print('num_boxes', num_boxes)
-        print('pred_num_boxes', pred_num_boxes)
-        print('box_error', box_error)
+        #print('num_boxes', num_boxes)
+        #print('pred_num_boxes', pred_num_boxes)
+        #print('box_error', box_error)
 
         # calculate statistics, including AP
         AP, _, _, _ = compute_ap(gt_bbox, gt_class_id, gt_mask, r["rois"], r["class_ids"], r["scores"], r['masks'])
@@ -165,27 +184,29 @@ train_set = NucleiDataset()
 train_set.load_dataset('nuclei', is_train=True)
 train_set.prepare()
 print('Train: %d' % len(train_set.image_ids))
-print('Train image_ids', train_set.image_ids)
+#print('Train image_ids', train_set.image_ids)
 # load the test dataset
 test_set = NucleiDataset()
 test_set.load_dataset('nuclei', is_train=False)
 test_set.prepare()
-print('Test: %d' % len(test_set.image_ids))
+print('Val: %d' % len(test_set.image_ids))
 # create config
 cfg = PredictionConfig()
 # define the model
 model = MaskRCNN(mode='inference', model_dir='./', config=cfg)
+# latest model weights
+weights = 'nuclei_cfg20210202_15epochs_0.01lr/'
 # load model weights
-model.load_weights('mask_rcnn_nuclei_cfg_0005.h5', by_name=True)
+model.load_weights(weights + 'mask_rcnn_nuclei_cfg_0007.h5', by_name=True)
 # evaluate model on training dataset
 #print(train_set.image_ids)
 
-train_mAP, box_errors, num_boxes_list, pred_num_boxes_list, APs = evaluate_model(train_set, model, cfg)
+train_mAP, box_errors, num_boxes_list, pred_num_boxes_list, APs = evaluate_model(test_set, model, cfg)
 print("Train mAP: %.3f" % train_mAP)
 print('box errors', box_errors)
 
 #write the number of boxes actual and predicted to a text file
-num_boxes = open('num_boxes_lists_1.txt', 'w')
+num_boxes = open('num_boxes_lists_7epochs_0.01lr.txt', 'w')
 num_boxes.write(str(num_boxes_list))
 num_boxes.write(',\n')
 num_boxes.write(str(pred_num_boxes_list))

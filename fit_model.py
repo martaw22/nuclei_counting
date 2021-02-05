@@ -1,4 +1,4 @@
-# fit a mask rcnn on the kangaroo dataset
+# fit a mask rcnn on the nuclei dataset
 
 from os import listdir
 from xml.etree import ElementTree
@@ -8,36 +8,63 @@ from mrcnn.utils import Dataset
 from mrcnn.config import Config
 from mrcnn.model import MaskRCNN
 import time
+import random
+import numpy as np
+import pickle
 
-# class that defines and loads the kangaroo dataset
+# class that defines and loads the nuclei dataset
 class NucleiDataset(Dataset):
 	# load the dataset definitions
 	def load_dataset(self, dataset_dir, is_train=True):
 		# define one class
-		self.add_class("dataset", 1, "nuclei")
+                self.add_class("dataset", 1, "nuclei")
 		# define data locations
-		images_dir = dataset_dir + '/cropped_original_images/'
-		annotations_dir = dataset_dir + '/xml_files/'
-		# find all images
-		for filename in listdir(images_dir):
-			if filename == '.DS_Store':
-				continue
-			# extract image id
-			image_id = filename[:-4]
-			# skip bad images
-			#if image_id in ['00090']:
-			#	continue
-			# skip all images after 150 if we are building the train set
-			#if is_train and int(image_id) >= 150:
-			#	continue
-			# skip all images before 150 if we are building the test/val set
-			#if not is_train and int(image_id) < 150:
-			#	continue
-			img_path = images_dir + filename
-			ann_path = annotations_dir + image_id + '.xml'
-			# add to dataset
-			self.add_image('dataset', image_id=image_id, path=img_path, annotation=ann_path)
-
+                images_dir = dataset_dir + '/cropped_images_pool/'
+                annotations_dir = dataset_dir + '/xml_files/cropped/'
+                #define validation data location
+                #val_images_dir = dataset_dir + '/cropped_images_pool/'
+                #val_annotations_dir = dataset_dir + '/xml_files/cropped/'
+                #define random integer list
+                images_list = listdir(images_dir)
+                #select training images
+                train_im = np.random.choice(images_list, int(len(images_list)*.9), replace = False)
+                #get the remaining images for validation
+                val_im = [i for i in images_list if i not in train_im]
+                #save validation data so we can use it in eval
+                with open('val_images_15epochs_0.01lr_2', 'wb') as im_list:
+                        pickle.dump(val_im, im_list)
+                # find all training images
+                if is_train:
+                        for filename in train_im:
+                                if filename == '.DS_Store':
+                                        continue
+                                # extract image id
+                                image_id = filename[:-4]
+                                # skip bad images
+                                #if image_id in ['00090']:
+                                #	continue
+                                # skip all images after 150 if we are building the train set
+                                #if is_train and int(image_id) >= 150:
+                                #	continue
+                                # skip all images before 150 if we are building the test/val set
+                                #if not is_train and int(image_id) < 150:
+                                #	continue
+                                img_path = images_dir + filename
+                                ann_path = annotations_dir + image_id + '.xml'
+                                # add to dataset
+                                self.add_image('dataset', image_id=image_id, path=img_path, annotation=ann_path)
+                #find all val images
+                if not is_train:
+                        for filename in val_im:
+                                if filename == '.DS_Store':
+                                        continue
+                                #extract image id
+                                image_id = filename[:-4]
+                                img_path = images_dir + filename
+                                ann_path = annotations_dir + image_id + '.xml'
+                                #add to dataset
+                                self.add_image('dataset', image_id=image_id, path=img_path, annotation=ann_path)
+                        
 	# extract bounding boxes from an annotation file
 	def extract_boxes(self, filename):
 		# load and parse the file
@@ -85,19 +112,25 @@ class NucleiDataset(Dataset):
 
 # define a configuration for the model
 class NucleiConfig(Config):
-	# define the name of the configuration
-	NAME = "nuclei_cfg"
-	# number of classes (background + kangaroo)
-	NUM_CLASSES = 1 + 1
-	#Reduce batch size
-	GPU_COUNT = 1
-	IMAGES_PER_GPU = 1
-	# number of training steps per epoch
-	STEPS_PER_EPOCH = 2
-	#images are cropped from originals
-	IMAGE_MIN_DIM = 512
-	IMAGE_MAX_DIM = 512
-
+        # define the name of the configuration
+        NAME = "nuclei_cfg"
+        # number of classes (background + nuclei)
+        NUM_CLASSES = 1 + 1
+        #Reduce batch size
+        GPU_COUNT = 1
+        IMAGES_PER_GPU = 1
+        # number of training steps per epoch
+        STEPS_PER_EPOCH = 2
+        #images are cropped from originals
+        IMAGE_MIN_DIM = 512
+        IMAGE_MAX_DIM = 512
+        #size of fully connected layer
+        #FPN_CLASSIF_FC_LAYERS_SIZE = 512
+        # Max number of final detections                                                                                                   
+        DETECTION_MAX_INSTANCES = 10000
+        #learning rate and momentum - original were 0.001 and 0.9
+        LEARNING_RATE = 0.01
+        LEARNING_MOMENTUM = 0.9
 
 
 #start timing the run
@@ -113,7 +146,7 @@ print('Train: %d' % len(train_set.image_ids))
 test_set = NucleiDataset()
 test_set.load_dataset('nuclei', is_train=False)
 test_set.prepare()
-print('Test: %d' % len(test_set.image_ids))
+print('Validation: %d' % len(test_set.image_ids))
 # prepare config
 config = NucleiConfig()
 config.display()
@@ -122,7 +155,9 @@ model = MaskRCNN(mode='training', model_dir='./', config=config)
 # load weights (mscoco) and exclude the output layers
 model.load_weights('mask_rcnn_coco.h5', by_name=True, exclude=["mrcnn_class_logits", "mrcnn_bbox_fc",  "mrcnn_bbox", "mrcnn_mask"])
 # train weights (output layers or 'heads')
-model.train(train_set, test_set, learning_rate=config.LEARNING_RATE, epochs=5, layers='heads')
+model.train(train_set, test_set, learning_rate=config.LEARNING_RATE, epochs=15, layers='heads')
+#save the model - can't use this, but saving checkpoint
+#model.save('model_weights_020121')
 
 #end time of run
 time_end = time.perf_counter()
